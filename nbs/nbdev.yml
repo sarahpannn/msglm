@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "msglm"
+  site-url: "https://AnswerDotAI.github.io/msglm"
+  description: "msglm makes it a little easier to create messages for language models like Claude and OpenAI GPTs."
+  repo-branch: main
+  repo-url: "https://github.com/AnswerDotAI/msglm"
