@@ -11,4 +11,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps: [uses: fastai/workflows/quarto-ghp@master]
+    steps:
+      - uses: actions/checkout@v3
+        # We use a custom action which is 99% the same as the default nbdev deploy action.
+        # The only change is that we also pip install openai and anthropic.
+        # These packages are used in some core cells but are not included in the requirements.
+        # This was causing the deployment task to fail.
+        # https://github.com/fastai/workflows/blob/master/quarto-ghp/action.yml
+      - uses: ./.github/actions
