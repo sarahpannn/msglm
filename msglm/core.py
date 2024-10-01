@@ -6,7 +6,7 @@
 __all__ = ['mk_msg_openai', 'mk_msgs_openai', 'mk_msg', 'mk_msgs', 'Msg', 'AnthropicMsg', 'OpenAiMsg', 'mk_msg_anthropic',
            'mk_msgs_anthropic']
 
-# %% ../nbs/00_core.ipynb 3
+# %% ../nbs/00_core.ipynb
 import base64
 import mimetypes
 from collections import abc
@@ -15,27 +15,27 @@ from fastcore import imghdr
 from fastcore.meta import delegates
 from fastcore.utils import *
 
-# %% ../nbs/00_core.ipynb 48
+# %% ../nbs/00_core.ipynb
 def _mk_img(data:bytes)->tuple:
     "Convert image bytes to a base64 encoded image"
     img = base64.b64encode(data).decode("utf-8")
     mtype = mimetypes.types_map["."+imghdr.what(None, h=data)]
     return img, mtype
 
-# %% ../nbs/00_core.ipynb 54
-def mk_msg(content:[list,str], role:str="user", *args, api:str="openai", text_only=False, **kw)->dict:
+# %% ../nbs/00_core.ipynb
+def mk_msg(content:Union[list,str], role:str="user", *args, api:str="openai", text_only=False, **kw)->dict:
     "Create an OpenAI/Anthropic compatible message."
     if text_only and not isinstance(content, str): raise("`content` muse be a string for `text_only` models.")
     m = OpenAiMsg if api == "openai" else AnthropicMsg
     return m()(role, content, text_only=text_only, **kw)
 
-# %% ../nbs/00_core.ipynb 59
+# %% ../nbs/00_core.ipynb
 def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
     "Create a list of messages compatible with OpenAI/Anthropic."
     if isinstance(msgs, str): msgs = [msgs]
     return [mk_msg(o, ('user', 'assistant')[i % 2], *args, api=api, **kw) for i, o in enumerate(msgs)]
 
-# %% ../nbs/00_core.ipynb 63
+# %% ../nbs/00_core.ipynb
 class Msg:
     "Helper class to create a message for the OpenAI and Anthropic APIs."
     def __call__(self, role:str, content:[list, str], text_only:bool=False, **kw)->dict:
@@ -47,7 +47,8 @@ class Msg:
         return dict(role=role, content=content[0] if text_only else content, **kw)
 
     def find_block(self, r)->dict:
-        ...
+        "Find the message in `r`."
+        raise NotImplemented
 
     def text_msg(self, s:str, text_only:bool=False, **kw):
         "Convert `s` to a text message"
@@ -55,7 +56,7 @@ class Msg:
 
     def img_msg(self, *args, **kw)->dict:
         "Convert bytes to an image message"
-        ...
+        raise NotImplemented
 
     def mk_content(self, content:[str, bytes], text_only:bool=False) -> dict:
         "Create the appropriate data structure based the content type."
@@ -63,7 +64,7 @@ class Msg:
         if isinstance(content, bytes): return self.img_msg(content)
         return content
 
-# %% ../nbs/00_core.ipynb 64
+# %% ../nbs/00_core.ipynb
 class AnthropicMsg(Msg):
     def img_msg(self, data: bytes) -> dict:
         "Convert `data` to an image message"
@@ -75,7 +76,7 @@ class AnthropicMsg(Msg):
         "Find the message in `r`."
         return r.get('content', r) if isinstance(r, abc.Mapping) else r
 
-# %% ../nbs/00_core.ipynb 65
+# %% ../nbs/00_core.ipynb
 class OpenAiMsg(Msg):
     def img_msg(self, data: bytes) -> dict:
         "Convert `data` to an image message"
@@ -91,11 +92,11 @@ class OpenAiMsg(Msg):
         if hasattr(m, "message"): return m.message.content
         return m.delta
 
-# %% ../nbs/00_core.ipynb 71
+# %% ../nbs/00_core.ipynb
 mk_msg_openai = partial(mk_msg, api="openai")
 mk_msgs_openai = partial(mk_msgs, api="openai")
 
-# %% ../nbs/00_core.ipynb 77
+# %% ../nbs/00_core.ipynb
 def _add_cache_control(msg, cache=False):
     "cache `msg`."
     if cache: msg["content"][-1]["cache_control"] = {"type": "ephemeral"}
