@@ -5,11 +5,10 @@
 
 ### Installation
 
-Install the latest version from the GitHub
-[repository](https://github.com/AnswerDotAI/msglm):
+Install the latest version from pypi
 
 ``` sh
-$ pip install git+ssh://git@github.com/AnswerDotAI/msglm.git
+$ pip install msglm
 ```
 
 ## Usage

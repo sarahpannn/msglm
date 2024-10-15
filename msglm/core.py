@@ -38,14 +38,20 @@ def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
 # %% ../nbs/00_core.ipynb
 class Msg:
     "Helper class to create a message for the OpenAI and Anthropic APIs."
+    sdk_obj_support=False # is an SDK object a valid message?
     def __call__(self, role:str, content:[list, str], text_only:bool=False, **kw)->dict:
         "Create an OpenAI/Anthropic compatible message with `role` and `content`."
+        if self.sdk_obj_support and self.is_sdk_obj(content): return self.find_block(content)
         if hasattr(content, "content"): content, role = content.content, content.role
         content = self.find_block(content)
         if content is not None and not isinstance(content, list): content = [content]
         content = [self.mk_content(o, text_only=text_only) for o in content] if content else ''
         return dict(role=role, content=content[0] if text_only else content, **kw)
 
+    def is_sdk_obj(self, r)-> bool:
+        "Check if `r` is an SDK object."
+        raise NotImplemented
+        
     def find_block(self, r)->dict:
         "Find the message in `r`."
         raise NotImplemented
@@ -66,30 +72,40 @@ class Msg:
 
 # %% ../nbs/00_core.ipynb
 class AnthropicMsg(Msg):
+    sdk_obj_support=False
     def img_msg(self, data: bytes) -> dict:
         "Convert `data` to an image message"
-        img, mtype = mk_img(data)
+        img, mtype = _mk_img(data)
         r = {"type": "base64", "media_type": mtype, "data":img}
         return {"type": "image", "source": r}
 
+    def is_sdk_obj(self, r)-> bool:
+        "Check if `r` is an SDK object."
+        return isinstance(r, abc.Mapping)
+
     def find_block(self, r):
         "Find the message in `r`."
-        return r.get('content', r) if isinstance(r, abc.Mapping) else r
+        return r.get('content', r) if self.is_sdk_obj(r) else r
 
 # %% ../nbs/00_core.ipynb
 class OpenAiMsg(Msg):
+    sdk_obj_support=True
     def img_msg(self, data: bytes) -> dict:
         "Convert `data` to an image message"
-        img, mtype = mk_img(data)
+        img, mtype = _mk_img(data)
         r = {"url": f"data:{mtype};base64,{img}"}
         return {"type": "image_url", "image_url": r}
 
+    def is_sdk_obj(self, r)-> bool:
+        "Check if `r` is an SDK object."
+        return type(r).__module__ != "builtins"
+
     def find_block(self, r):
         "Find the message in `r`."
-        if type(r).__module__ == "builtins": return r
+        if not self.is_sdk_obj(r): return r
         m = nested_idx(r, "choices", 0)
         if not m: return m
-        if hasattr(m, "message"): return m.message.content
+        if hasattr(m, "message"): return m.message
         return m.delta
 
 # %% ../nbs/00_core.ipynb
