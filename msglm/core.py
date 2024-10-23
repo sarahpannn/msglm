@@ -23,9 +23,9 @@ def _mk_img(data:bytes)->tuple:
     return img, mtype
 
 # %% ../nbs/00_core.ipynb
-def mk_msg(content:Union[list,str], role:str="user", *args, api:str="openai", text_only=False, **kw)->dict:
+def mk_msg(content:Union[list,str], role:str="user", *args, api:str="openai", **kw)->dict:
     "Create an OpenAI/Anthropic compatible message."
-    if text_only and not isinstance(content, str): raise("`content` muse be a string for `text_only` models.")
+    text_only = isinstance(content, str) or (isinstance(content, list) and len(content) == 1 and isinstance(content[0], str))
     m = OpenAiMsg if api == "openai" else AnthropicMsg
     return m()(role, content, text_only=text_only, **kw)
 
@@ -39,7 +39,7 @@ def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
 class Msg:
     "Helper class to create a message for the OpenAI and Anthropic APIs."
     sdk_obj_support=False # is an SDK object a valid message?
-    def __call__(self, role:str, content:[list, str], text_only:bool=False, **kw)->dict:
+    def __call__(self, role:str, content:[list,str], text_only:bool=False, **kw)->dict:
         "Create an OpenAI/Anthropic compatible message with `role` and `content`."
         if self.sdk_obj_support and self.is_sdk_obj(content): return self.find_block(content)
         if hasattr(content, "content"): content, role = content.content, content.role
@@ -115,7 +115,9 @@ mk_msgs_openai = partial(mk_msgs, api="openai")
 # %% ../nbs/00_core.ipynb
 def _add_cache_control(msg, cache=False):
     "cache `msg`."
-    if cache: msg["content"][-1]["cache_control"] = {"type": "ephemeral"}
+    if not cache: return msg
+    if isinstance(msg["content"], str): msg["content"] = [{"type": "text", "text": msg["content"]}]
+    msg["content"][-1]["cache_control"] = {"type": "ephemeral"}
     return msg
 
 @delegates(mk_msg)

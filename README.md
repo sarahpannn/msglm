@@ -24,7 +24,7 @@ client = OpenAI()
 completion = client.chat.completions.create(
   model="gpt-4o",
   messages=[
-    {"role": "user", "content": [{"type": "text", "text": "What's the Wild Atlantic Way?"}]}
+    {"role": "user", "content": "What's the Wild Atlantic Way?"}
   ]
 )
 ```
@@ -41,13 +41,13 @@ For a text chat simply pass a list of strings and the api format
 (e.g. “openai”) to **mk_msgs** and it will generate the correct format.
 
 ``` python
-mk_msgs(["Hello, world!", "some LLM response"], api="openai")
+mk_msgs(["Hello, world!", "some assistant response"], api="openai")
 ```
 
 ``` js
 [
-    {"role": "user", "content": [{"type": "text", "text": "Hello, world!"}]},
-    {"role": "assistant", "content": [{"type": "text", "text": "Some assistant response"}]}
+    {"role": "user", "content": "Hello, world!"},
+    {"role": "assistant", "content": "Some assistant response"}
 ]
 ```
 
@@ -141,8 +141,8 @@ print(r.choices[0].message.content)
 
 ### API Wrappers
 
-To make your life a little easier msglm comes with api specific wrappers
-for [`mk_msg`](https://AnswerDotAI.github.io/msglm/core.html#mk_msg) and
+To make life a little easier, msglm comes with api specific wrappers for
+[`mk_msg`](https://AnswerDotAI.github.io/msglm/core.html#mk_msg) and
 [`mk_msgs`](https://AnswerDotAI.github.io/msglm/core.html#mk_msgs).
 
 For Anthropic use
@@ -182,28 +182,8 @@ This generates the expected cache block below
 }
 ```
 
-#### Text only models
-
-*msglm* supports text only models such as DeepSeek that use the OpenAI
-API format. Simply pass *text_only=True* to *mk_msg* or *mk_msgs*
-
-``` python
-from msglm import mk_msg_openai as mk_msg
-
-mk_msg("please format my text only prompt", text_only=True)
-```
-
-This generates the expected cache block below
-
-``` js
-{
-    "role": "user",
-    "content": "please format my text only prompt"
-}
-```
-
 ### Summary
 
 We hope *msglm* will make your life a little easier when chatting to
 LLMs. To learn more about the package please read this
-[doc](./core.html).
+[doc](https://answerdotai.github.io/msglm/).
