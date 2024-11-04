@@ -182,6 +182,38 @@ This generates the expected cache block below
 }
 ```
 
+#### PDF chats
+
+*msglm* offers PDF
+[support](https://docs.anthropic.com/en/docs/build-with-claude/pdf-support)
+for Anthropic. Just like an image chat all you need to do is pass the
+raw pdf bytes in a list with your question to *mk_msg* and it will
+generate the correct format as shown in the example below.
+
+``` python
+import httpx
+from msglm import mk_msg_anthropic as mk_msg
+from anthropic import Anthropic
+
+client = Anthropic(default_headers={'anthropic-beta': 'pdfs-2024-09-25'})
+
+url = "https://assets.anthropic.com/m/1cd9d098ac3e6467/original/Claude-3-Model-Card-October-Addendum.pdf"
+pdf = httpx.get(url).content
+
+r = client.messages.create(
+    model="claude-3-5-sonnet-20241022",
+    max_tokens=1024,
+    messages=[mk_msg([pdf, "Which model has the highest human preference win rates across each use-case?"])]
+)
+print(r.content[0].text)
+```
+
+Note: this feature is currently in beta so you’ll need to:
+
+- use the Anthropic beta client
+  (e.g. `anthropic.Anthropic(default_headers={'anthropic-beta': 'pdfs-2024-09-25'})`)
+- use the `claude-3-5-sonnet-20241022` model
+
 ### Summary
 
 We hope *msglm* will make your life a little easier when chatting to

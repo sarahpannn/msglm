@@ -23,6 +23,17 @@ def _mk_img(data:bytes)->tuple:
     return img, mtype
 
 # %% ../nbs/00_core.ipynb
+def _is_img(data): return isinstance(data, bytes) and bool(imghdr.what(None, data))
+
+# %% ../nbs/00_core.ipynb
+def _is_pdf(data): return isinstance(data, bytes) and data.startswith(b'%PDF-')
+
+# %% ../nbs/00_core.ipynb
+def _mk_pdf(data:bytes)->str:
+    "Convert pdf bytes to a base64 encoded pdf"
+    return base64.standard_b64encode(data).decode("utf-8")
+
+# %% ../nbs/00_core.ipynb
 def mk_msg(content:Union[list,str], role:str="user", *args, api:str="openai", **kw)->dict:
     "Create an OpenAI/Anthropic compatible message."
     text_only = isinstance(content, str) or (isinstance(content, list) and len(content) == 1 and isinstance(content[0], str))
@@ -64,10 +75,15 @@ class Msg:
         "Convert bytes to an image message"
         raise NotImplemented
 
+    def pdf_msg(self, *args, **kw)->dict:
+        "Convert bytes to a pdf message"
+        raise NotImplemented
+    
     def mk_content(self, content:[str, bytes], text_only:bool=False) -> dict:
         "Create the appropriate data structure based the content type."
         if isinstance(content, str): return self.text_msg(content, text_only=text_only)
-        if isinstance(content, bytes): return self.img_msg(content)
+        if _is_img(content): return self.img_msg(content)
+        if _is_pdf(content): return self.pdf_msg(content)
         return content
 
 # %% ../nbs/00_core.ipynb
@@ -79,6 +95,11 @@ class AnthropicMsg(Msg):
         r = {"type": "base64", "media_type": mtype, "data":img}
         return {"type": "image", "source": r}
 
+    def pdf_msg(self, data: bytes) -> dict:
+        "Convert `data` to a pdf message"
+        r = {"type": "base64", "media_type": "application/pdf", "data":_mk_pdf(data)}
+        return {"type": "document", "source": r}
+    
     def is_sdk_obj(self, r)-> bool:
         "Check if `r` is an SDK object."
         return isinstance(r, abc.Mapping)
