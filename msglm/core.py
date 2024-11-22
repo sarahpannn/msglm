@@ -38,7 +38,8 @@ def mk_msg(content:Union[list,str], role:str="user", *args, api:str="openai", **
     "Create an OpenAI/Anthropic compatible message."
     text_only = isinstance(content, str) or (isinstance(content, list) and len(content) == 1 and isinstance(content[0], str))
     m = OpenAiMsg if api == "openai" else AnthropicMsg
-    return m()(role, content, text_only=text_only, **kw)
+    msg = m()(role, content, text_only=text_only, **kw)
+    return dict2obj(msg, list_func=list)
 
 # %% ../nbs/00_core.ipynb
 def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
