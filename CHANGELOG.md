@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 0.0.4
+
+### New Features
+
+- add pdf support for Claude ([#2](https://github.com/AnswerDotAI/msglm/pull/2)), thanks to [@comhar](https://github.com/comhar)
+- convert `mk_msg` output to `AttrDict`
+
 ## 0.0.3
 
 ### New Features
