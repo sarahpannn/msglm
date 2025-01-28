@@ -139,8 +139,17 @@ def _add_cache_control(msg, cache=False):
     "cache `msg`."
     if not cache: return msg
     if isinstance(msg["content"], str): msg["content"] = [{"type": "text", "text": msg["content"]}]
-    msg["content"][-1]["cache_control"] = {"type": "ephemeral"}
+    if isinstance(msg["content"][-1], dict): msg["content"][-1]["cache_control"] = {"type": "ephemeral"}
+    elif isinstance(msg["content"][-1], abc.Mapping): msg["content"][-1].cache_control = {"type": "ephemeral"}
     return msg
+
+def _remove_cache_ckpts(msg):
+    "remove unecessary cache checkpoints."
+    if isinstance(msg["content"], str): msg["content"] = [{"type": "text", "text": msg["content"]}]
+    elif isinstance(msg["content"][-1], dict): msg["content"][-1].pop('cache_control', None)
+    else: delattr(msg["content"][-1], 'cache_control') if hasattr(msg["content"][-1], 'cache_control') else None
+    return msg
+
 
 @delegates(mk_msg)
 def mk_msg_anthropic(*args, cache=False, **kwargs):
@@ -149,7 +158,9 @@ def mk_msg_anthropic(*args, cache=False, **kwargs):
     return _add_cache_control(msg, cache=cache)
 
 @delegates(mk_msgs)
-def mk_msgs_anthropic(*args, cache=False, **kwargs):
+def mk_msgs_anthropic(*args, cache=False, cache_last_ckpt_only=False, **kwargs):
     "Create a list of Anthropic compatible messages."
     msgs = partial(mk_msgs, api="anthropic")(*args, **kwargs)
-    return [_add_cache_control(msg, cache=cache) for msg in msgs]
+    msgs = [_remove_cache_ckpts(m) for m in msgs]
+    msgs[-1] = _add_cache_control(msgs[-1], cache=cache)
+    return msgs
