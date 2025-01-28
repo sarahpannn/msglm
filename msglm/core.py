@@ -161,6 +161,6 @@ def mk_msg_anthropic(*args, cache=False, **kwargs):
 def mk_msgs_anthropic(*args, cache=False, cache_last_ckpt_only=False, **kwargs):
     "Create a list of Anthropic compatible messages."
     msgs = partial(mk_msgs, api="anthropic")(*args, **kwargs)
-    msgs = [_remove_cache_ckpts(m) for m in msgs]
+    if cache_last_ckpt_only: msgs = [_remove_cache_ckpts(m) for m in msgs]
     msgs[-1] = _add_cache_control(msgs[-1], cache=cache)
     return msgs
