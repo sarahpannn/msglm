@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 0.0.5
+
+### New Features
+
+- add support for using a single cache checkpoint ([#4](https://github.com/AnswerDotAI/msglm/pull/4)), thanks to [@bclavie](https://github.com/bclavie)
+
+
 ## 0.0.4
 
 ### New Features
