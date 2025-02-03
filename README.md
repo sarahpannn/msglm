@@ -214,6 +214,35 @@ Note: this feature is currently in beta so you’ll need to:
   (e.g. `anthropic.Anthropic(default_headers={'anthropic-beta': 'pdfs-2024-09-25'})`)
 - use the `claude-3-5-sonnet-20241022` model
 
+#### Citations
+
+*msglm* supports Anthropic
+[citations](https://docs.anthropic.com/en/docs/build-with-claude/citations).
+All you need to do is pass the content of your document to *mk_ant_doc*
+and then pass the output to *mk_msg* along with your question as shown
+in the example below.
+
+``` python
+from msglm import mk_ant_doc, mk_msg_anthropic as mk_msg
+from anthropic import Anthropic
+
+client = Anthropic()
+
+doc = mk_ant_doc("The grass is green. The sky is blue.", title="My Document")
+
+r = client.messages.create(
+    model="claude-3-5-sonnet-20241022",
+    max_tokens=1024,
+    messages=[mk_msg([doc, "What color is the grass and sky?"])]
+)
+for o in r.content:
+    if c:=getattr(o, 'citations', None): print(f"{o.text}. source: {c[0]['cited_text']} from  {c[0]['document_title']}")
+    else: print(o.text)
+```
+
+*Note: The citations feature is currently available on Claude 3.5 Sonnet
+(new) and 3.5 Haiku.*
+
 ### Summary
 
 We hope *msglm* will make your life a little easier when chatting to
