@@ -4,7 +4,7 @@
 
 # %% auto 0
 __all__ = ['mk_msg_openai', 'mk_msgs_openai', 'mk_msg', 'mk_msgs', 'Msg', 'AnthropicMsg', 'OpenAiMsg', 'mk_msg_anthropic',
-           'mk_msgs_anthropic']
+           'mk_msgs_anthropic', 'mk_ant_doc']
 
 # %% ../nbs/00_core.ipynb
 import base64
@@ -164,3 +164,11 @@ def mk_msgs_anthropic(*args, cache=False, cache_last_ckpt_only=False, **kwargs):
     if cache_last_ckpt_only: msgs = [_remove_cache_ckpts(m) for m in msgs]
     msgs[-1] = _add_cache_control(msgs[-1], cache=cache)
     return msgs
+
+# %% ../nbs/00_core.ipynb
+def mk_ant_doc(content, title=None, context=None, citation=True, **kws):
+    "Create an Anthropic document."
+    if _is_pdf(content): src = {"type":"base64", "media_type":"application/pdf", "data":_mk_pdf(content)}
+    elif isinstance(content,list): src = {"type":"content", "content":content}
+    else: src = {"type":"text", "media_type":"text/plain", "data":content}
+    return {"type":"document", "source":src, "citations":{"enabled":citation}, "title":title, "context":context, **kws}
