@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 0.0.7
+
+### New Features
+
+- add anthropic citation support ([#7](https://github.com/AnswerDotAI/msglm/pull/7)), thanks to [@comhar](https://github.com/comhar)
+
+### Bugs Squashed
+
+- `mk_msgs_anthropic` fails if no msgs ([#8](https://github.com/AnswerDotAI/msglm/issues/8))
+
+
 ## 0.0.6
 
 ### New Features
