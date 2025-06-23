@@ -134,7 +134,6 @@ def find_block(self:OpenAiMsg, r):
     "Find the message in `r`."
     if isinstance(r,Mapping): return r
     if hasattr(r, "output"): return r.output
-#     if hasattr(r, "delta"): return r.delta
     return r
 
 # %% ../nbs/00_core.ipynb
