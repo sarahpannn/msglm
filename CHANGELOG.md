@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 0.0.8
+
+### New Features
+
+- Improve `find_block` in openai to handle more message types, including reasoning outputs ([#10](https://github.com/AnswerDotAI/msglm/issues/10))
+- Move openai to responses API ([#9](https://github.com/AnswerDotAI/msglm/issues/9))
+
+
 ## 0.0.7
 
 ### New Features
