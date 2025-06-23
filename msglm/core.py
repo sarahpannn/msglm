@@ -9,7 +9,7 @@ __all__ = ['mk_msg_openai', 'mk_msgs_openai', 'Msg', 'OpenAiMsg', 'AnthropicMsg'
 # %% ../nbs/00_core.ipynb
 import base64
 import mimetypes
-from collections import abc
+from collections.abc import Mapping
 
 from fastcore import imghdr
 from fastcore.meta import delegates
@@ -97,12 +97,6 @@ def pdf_msg(self:AnthropicMsg, data: bytes) -> dict:
     return {"type": "document", "source": r}
 
 # %% ../nbs/00_core.ipynb
-def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
-    "Create a list of messages compatible with OpenAI/Anthropic."
-    if isinstance(msgs, str): msgs = [msgs]
-    return [mk_msg(o, ('user', 'assistant')[i % 2], *args, api=api, **kw) for i, o in enumerate(msgs)]
-
-# %% ../nbs/00_core.ipynb
 @patch
 def __call__(self:Msg, role:str, content:[list,str], text_only:bool=False, **kw)->dict:
     "Create an OpenAI/Anthropic compatible message with `role` and `content`."
@@ -121,7 +115,7 @@ OpenAiMsg.sdk_obj_support=True
 @patch
 def is_sdk_obj(self:AnthropicMsg, r)-> bool:
     "Check if `r` is an SDK object."
-    return isinstance(r, abc.Mapping)
+    return isinstance(r, Mapping)
 
 @patch
 def find_block(self:AnthropicMsg, r):
@@ -132,14 +126,27 @@ def find_block(self:AnthropicMsg, r):
 @patch
 def is_sdk_obj(self:OpenAiMsg, r)-> bool:
     "Check if `r` is an SDK object."
-    return type(r).__module__ != "builtins"
+    return not isinstance(r, (str,bytes,list))
 
+@patch
 @patch
 def find_block(self:OpenAiMsg, r):
     "Find the message in `r`."
-    if not self.is_sdk_obj(r): return r
-    if hasattr(r, "output"): return r.output[0]
-    return r.delta
+    if isinstance(r,Mapping): return r
+    if hasattr(r, "output"): return r.output
+#     if hasattr(r, "delta"): return r.delta
+    return r
+
+# %% ../nbs/00_core.ipynb
+def mk_msgs(msgs: list, *args, api:str="openai", **kw) -> list:
+    "Create a list of messages compatible with OpenAI/Anthropic."
+    if isinstance(msgs, str): msgs = [msgs]
+    mm = [mk_msg(o, ('user', 'assistant')[i % 2], *args, api=api, **kw) for i, o in enumerate(msgs)]
+    res = []
+    for o in mm:
+        if isinstance(o,list): res += o
+        else: res.append(o)
+    return res
 
 # %% ../nbs/00_core.ipynb
 mk_msg_openai = partial(mk_msg, api="openai")
