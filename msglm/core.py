@@ -50,10 +50,8 @@ def _is_pdf(data):
 # %% ../nbs/00_core.ipynb
 @patch
 def mk_content(self:Msg, content, text_only=False)->dict:
-    if _is_img(content): 
-        return self.img_msg(content)
-    if _is_pdf(content): 
-        return self.pdf_msg(content)
+    if _is_img(content): return self.img_msg(content)
+    if _is_pdf(content): return self.pdf_msg(content)
     if isinstance(content, str): return self.text_msg(content, text_only=text_only)
     return content
 
